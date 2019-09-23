@@ -1,0 +1,52 @@
+#!/bin/bash
+#set -x
+
+ls -la
+echo "######## Build chaincode ########"
+mkdir build
+cd build
+
+# Download and install go binaries in current directory
+# This script also sets the GOPATH and GOROOT variables used later in this script
+echo "######## Begin install and configure Go ########"
+sudo apt-get update
+sudo apt-get install -y libtool
+export GO_VERSION="1.10.2"
+
+echo "######## Extracting and decompressing Go version ${GO_VERSION} ########"
+pwd
+curl -O https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+tar -xvf go${GO_VERSION}.linux-amd64.tar.gz
+# set location for go executables
+export GOROOT=$(pwd)/go
+export PATH=${GOROOT}/bin:$PATH
+export GOPATH=$(pwd)
+echo "GOPATH: ${GOPATH}"
+echo "GOROOT: ${GOROOT}"
+
+#Download Hyperledger Fabric src in current directory
+#also set the FABRIC_SRC_DIR variable used later in this script
+ls -la
+echo "######## Begin download Fabric ########"
+export HLF_VERSION="1.2.0"
+
+echo "######## Extracting and decompressing Fabric version ${HLF_VERSION} ########"
+curl -O -L https://github.com/hyperledger/fabric/archive/v${HLF_VERSION}.tar.gz
+tar -xvf v${HLF_VERSION}.tar.gz
+export FABRIC_SRC_DIR=$(pwd)/fabric-${HLF_VERSION}
+echo "FABRIC_SRC_DIR: ${FABRIC_SRC_DIR}"
+
+echo "######## Placing source in directory expected by go build ########"
+mkdir ${GOPATH}/src
+# Let's put fabric source into gopath so that go can resolve dependencies with Fabric libraries
+mkdir -p ${GOPATH}/src/github.com/hyperledger
+mv ${FABRIC_SRC_DIR} ${GOPATH}/src/github.com/hyperledger/fabric
+# Copy chaincode into gopath
+echo "Copy chaincode into gopath"
+
+cp -pR ../src/axispoint-cc ${GOPATH}/src
+ls -la ${GOPATH}/src/axispoint-cc/
+
+echo "######## Building chaincode ########"
+go build -v -x axispoint-cc
+pwd

@@ -1,0 +1,20 @@
+#!/bin/bash -x
+echo "######## Unitest chaincode ########"
+pwd
+ls -la
+cd build
+
+echo "get gcc"
+sudo apt-get -y install gcc
+gcc --version
+
+#assumption is that previous state copied go code under build directory
+export GOPATH=$(pwd)
+# assumption is that previous state installed go binaries in build directory
+export GOROOT=$(pwd)/go
+export PATH=${GOROOT}/bin:$PATH
+
+#  assumption is that previous state placed fabric src in the build directory
+echo "######## Testing chaincode ########"
+go test -v axispoint-cc
+pwd
